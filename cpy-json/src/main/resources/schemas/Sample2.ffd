@@ -1,0 +1,6 @@
+form: COPYBOOK
+id: 'MY-RECORD'
+values: 
+- { name: 'CLAIM-NUMBER', type: String, length: 3 }
+- { name: 'ADMISSION-DATE', type: Packed, length: 4, format: { signed: TRUE } }
+- { name: 'FROM-DATE', type: Packed, length: 2, format: { signed: TRUE } }

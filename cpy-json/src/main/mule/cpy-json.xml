@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+	<file:config name="File_Config" doc:name="File Config" doc:id="a68e91f9-b214-477b-8d2d-d99fc460ed57" >
+		<file:connection workingDir="C:\Cobol" />
+	</file:config>
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="cdc0c7d5-7cc7-4e42-bddb-5f69e2c02701" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="cpy-jsonFlow" doc:id="42573b77-451b-4df4-bba5-7d779ca8d039" >
+		<http:listener doc:name="Listener" doc:id="4921d5bf-4826-4c7d-9b2a-caf89573210c" config-ref="HTTP_Listener_config" path="/coboljson"/>
+		<file:read doc:id="9ada08b2-ed12-4995-bae3-ec5ce0eba8f5" config-ref="File_Config" path="sampledata.txt" outputEncoding="CP1047"/>
+		<logger level="INFO" doc:name="Logger" doc:id="664f5c53-1d7d-44f8-afa9-4a6637aaae79" message="#[payload]" category="::::Read Data from file::::"/>
+		<set-payload value="#[payload]" doc:name="Set Payload" doc:id="a94fce53-b75c-409f-85e7-88b4ff82856b" mimeType='application/flatfile; recordparsing=noTerminator; schemapath="schemas\\Sample.ffd"; truncatedependingon=true' encoding="CP1047"/>
+		<ee:transform doc:name="Transform Message" doc:id="6507e13b-0d7c-4dd9-923a-e043d29f6ccf" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	myRecord: {
+		claimNumber: payload[0]."CLAIM-NUMBER" default "",
+		admissionDate: if(payload[0]."ADMISSION-DATE"[7] == 'C') ( ('-' ++ payload[0]."ADMISSION-DATE"[0 to 6]) as Number) else null,
+		fromDate: payload[0]."FROM-DATE"[0 to 2] default 0
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="e3fc7ef8-c464-4ad1-9e4d-859350577d2e" message="#[payload]" category=":::JSON Payload::::"/>
+	</flow>
+</mule>

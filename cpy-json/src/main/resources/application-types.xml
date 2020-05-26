@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="cpy" format="copybook">
+      <types:shape format="copybook" element="MY-RECORD" location="schemas/Sample.ffd"/>
+    </types:type>
+    <types:type name="json" format="json">
+      <types:shape format="weave" example="examples/samplejson.json"><![CDATA[%dw 2.0
+
+type json = {|
+  myRecord: {|
+    claimNumber: String, 
+    admissionDate: Number {"typeId": "int"}, 
+    fromDate: Number {"typeId": "int"}
+  |}
+|} {"example": "{\\\"myRecord\\\":{\\\"claimNumber\\\":\\\"123\\\",\\\"admissionDate\\\":1234567,\\\"fromDate\\\":123}}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#6507e13b-0d7c-4dd9-923a-e043d29f6ccf">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="cpy"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="json"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>
